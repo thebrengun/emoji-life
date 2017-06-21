@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
+import EmotionSet from './EmotionSet';
 import './App.css';
+import { emotionsSimple} from './emotions'
 import { fate, getRandomIntInclusive, livingNeighbors } from './utils.js'
 
 class App extends Component {
@@ -12,19 +14,7 @@ class App extends Component {
     this.startTime = this.startTime.bind(this);
     this.stopTime = this.stopTime.bind(this);
     this.changeEmojiToAdd = this.changeEmojiToAdd.bind(this);
-    this.emojiStates = [
-      '',                               // 0
-      String.fromCodePoint(0x1F621),    // 1
-      String.fromCodePoint(0x1F62D),    // 2
-      String.fromCodePoint(0x02639),    // 3
-      String.fromCodePoint(0x1F610),    // 4
-      String.fromCodePoint(0x1F642),    // 5
-      String.fromCodePoint(0x1F60A),    // 6
-      String.fromCodePoint(0x1F61A),    // 7
-      String.fromCodePoint(0x1F600),    // 8
-      String.fromCodePoint(0x1F618),    // 9
-      String.fromCodePoint(0x1F60D),    // 10
-    ];
+    this.emos = new EmotionSet(emotionsSimple);
 
     const defaultBoardSize = {
       width: Math.floor(window.innerWidth / this.props.emojiSize), 
@@ -39,7 +29,7 @@ class App extends Component {
       boardSize: defaultBoardSize,
       generation: 0,
       paused: false,
-      speed: 90,
+      speed: 110,
       emojiToAdd: 5
     };
   }
@@ -53,6 +43,7 @@ class App extends Component {
   }
 
   addLife(x, y) {
+    console.log(this.emos.emotions[this.state.emojiToAdd]);
     this.setState({
       board: [
         ...this.state.board.slice(0, y),
@@ -61,10 +52,11 @@ class App extends Component {
           this.state.board[y][x].age === 0 ? 
             ({
               age: 1,
-              emo: this.emojiStates[this.state.emojiToAdd]
+              emo: this.state.emojiToAdd
             }) : 
             ({
-              age: 0
+              ...this.state.board[y][x],
+              emo: this.state.emojiToAdd
             }),
           ...this.state.board[y].slice(x + 1)
         ],
@@ -131,11 +123,11 @@ class App extends Component {
   }
 
   getNextGeneration(board) {
-    return board.map((row, y) => row.map((cell, x) => fate({cell, x, y, board})));
+    return board.map((row, y) => row.map((cell, x) => fate({cell, x, y, board, getEmo: this.emos.getEmotion})));
   }
 
   changeEmojiToAdd(e) {
-    this.setState({emojiToAdd: e.target.value});
+    this.setState({emojiToAdd: parseInt(e.target.value, 10) + 1});
   }
 
   renderWorld() {
@@ -150,7 +142,7 @@ class App extends Component {
             Math.floor(
               window.innerHeight / this.state.board[0].length
             )
-          )
+          ) + 'px'
         }}
       >
         {this.state.board.map(
@@ -163,7 +155,7 @@ class App extends Component {
                       onClick={(e) => this.addLife(x, y)}
                       className="cell"
                     >
-                      {cell.age ? this.emojiStates[cell.emo] : ''}
+                      {cell.age ? this.emos.emotions[cell.emo] : ''}
                     </div>
               )}
             </div>
@@ -234,6 +226,7 @@ class App extends Component {
               value={this.state.speed}
             >
             {[
+              {speed: 500, text: 'Really Slow'}, 
               {speed: 200, text: 'Slow'}, 
               {speed: 110, text: 'Medium'}, 
               {speed: 90, text: 'Pretty Fast'}, 
@@ -255,7 +248,7 @@ class App extends Component {
               onChange={this.changeEmojiToAdd} 
               value={this.state.emojiToAdd}
             >
-              {this.emojiStates.slice(1).map(
+              {this.emos.emotions.slice(1).map(
                 (emoji, i) => 
                   <option value={i} key={emoji + i}>{emoji}</option>
               )}
@@ -269,7 +262,7 @@ class App extends Component {
 }
 
 App.defaultProps = {
-  emojiSize: window.innerWidth * .018
+  emojiSize: window.innerWidth * .025
 };
 
 export default App;

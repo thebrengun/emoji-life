@@ -4,24 +4,14 @@ export function getRandomIntInclusive(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive 
 }
 
-export function fate({cell, x, y, board}) {
+export function fate({cell, x, y, board, getEmo}) {
   const living = livingNeighbors(x, y, board);
   const neighbors = living.length;
 
-  const averageHappiness = Math.round(living.reduce(
-		(total, {emo}) => 
-	  	emo + total
-	, 0) / living.length);
+  const averageHappiness = getAverageHappiness(living);
   
   if(cell.age) {
-    let nextEmo = cell.emo ? 
-      cell.emo + (averageHappiness - cell.emo) : 5;
-    nextEmo = Math.max(1, nextEmo);
-    nextEmo = Math.min(10, nextEmo);
-    // A 1 in 5 chance of being influenced by peer group
-    nextEmo = getRandomIntInclusive(1, 5) === 1 ? nextEmo : cell.emo;
-    // A 1 in 50 chance of just being random
-    nextEmo = getRandomIntInclusive(1, 50) !== 1 ? nextEmo : getRandomIntInclusive(1, 10);
+    const nextEmo = getEmo(cell, averageHappiness);
 
     return neighbors === 2 || neighbors === 3 ? 
       ({
@@ -73,14 +63,4 @@ function getAverageHappiness(living) {
 		(total, {emo}) => 
 		  emo + total
 		, 0) / living.length);
-}
-
-function getEmotion(cell, averageHappiness, emotions) {
-	let nextEmo = cell.emo ? 
-      cell.emo + (averageHappiness - cell.emo) : 5;
-    nextEmo = Math.max(1, nextEmo);
-    nextEmo = Math.min(10, nextEmo);
-    nextEmo = getRandomIntInclusive(1, 10) === 1 ? nextEmo : cell.emo;
-    nextEmo = getRandomIntInclusive(1, 50) === 1 ? nextEmo : getRandomIntInclusive(1, 10);
-    return nextEmo;
 }
