@@ -1,8 +1,0 @@
-{
-  "short_name": "Emoji Life",
-  "name": "Emoji Life - Conway's Game of Life with Emotional Contagion",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "theme_color": "#ffffff",
-  "background_color": "#000000"
-}
